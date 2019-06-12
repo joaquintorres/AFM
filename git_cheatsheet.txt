@@ -1,0 +1,50 @@
+Guía para usar GIT
+
+---------------------------------------------------------------------------
+
+* Abrir la terminal en la carpeta en la que se va a crear el repositorio local.
+La primera vez, se clona el repositorio:
+
+	git clone [url]
+
+Esto crea una carpeta dentro de la carpeta que se eligió antes, con el nombre del repositorio de github (en este caso 'L5').
+Este paso no se vuelve a hacer.
+
+---------------------------------------------------------------------------
+
+* Cuando se quiera editar alguno de los archivos, abrir la terminal *en la carpeta creada por git* (en este caso 'L5') e iniciar el repositorio local:
+
+	git init
+
+Debería aparecer el mensaje 'Reinitialized existing Git repository in [path]'. Si dice que está creando un repositorio, en lugar de abrir uno existente, la carpeta en la que se abrió el terminal no es la correcta. Borrar la carpeta '.git' que se creó en cualquier lado y volver a ejecutar 'git init' en la carpeta adecuada.
+
+* Actualizar los archivos:
+
+	git pull
+
+-------------------------
+* Editar los archivos.
+-------------------------
+
+
+* Agregar los archivos editados al seguimiento:
+
+	git add [archivo]
+
+('git add -A' agrega al seguimiento todos los archivos que están en la carpeta.)
+
+* [Opcional] Corroborar que que haya cambios en los archivos agregados, sin 'guardar' en el seguimiento:
+
+	git status
+
+* 'Guardar' los cambios realizados sobre los archivos en el seguimiento:
+
+	git commit -m '[mensaje]'
+
+* [Opcional] Corroborar que hayan sido guardados los cambios en el repositorio local, y que falte subirlos al repositorio remoto:
+
+	git status
+
+* Subir los cambios al repositorio remoto:
+
+	git push
