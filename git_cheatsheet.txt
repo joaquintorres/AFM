@@ -1,27 +1,29 @@
 Guía para usar GIT
 
 ---------------------------------------------------------------------------
+*Preliminares:
+
+
+	git config --global user.name "John Doe"
+	git config --global user.email johndoe@example.com
+Configura cómo se va a ver quién hizo las modificaciones, independientemente del nombre del usuario de Github/Gitlab/etc 
+
 
 * Abrir la terminal en la carpeta en la que se va a crear el repositorio local.
 La primera vez, se clona el repositorio:
 
 	git clone [url]
 
-Esto crea una carpeta dentro de la carpeta que se eligió antes, con el nombre del repositorio de github (en este caso 'L5').
-Este paso no se vuelve a hacer.
+Esto crea una carpeta dentro de la carpeta actual en la terminal(pwd) con el nombre del repositorio de github, y le dice a git que puede tratarla como un repositorio. No es recomendable poner archivos que no se quieran en en el repositorio en esta carpeta.
 
 ---------------------------------------------------------------------------
-
-* Cuando se quiera editar alguno de los archivos, abrir la terminal *en la carpeta creada por git* (en este caso 'L5') e iniciar el repositorio local:
-
-	git init
-
-Debería aparecer el mensaje 'Reinitialized existing Git repository in [path]'. Si dice que está creando un repositorio, en lugar de abrir uno existente, la carpeta en la que se abrió el terminal no es la correcta. Borrar la carpeta '.git' que se creó en cualquier lado y volver a ejecutar 'git init' en la carpeta adecuada.
 
 * Actualizar los archivos:
 
 	git pull
-
+Básicamente actualiza todos los archivos que hayan sido modificados en la versión más nueva de la
+branch en la que se esté trabajando (si no hacemos más branches, 'master')¡Cuidado con los conflictos con
+los archivos locales que no se hayan puesto en un commit!
 -------------------------
 * Editar los archivos.
 -------------------------
@@ -31,15 +33,17 @@ Debería aparecer el mensaje 'Reinitialized existing Git repository in [path]'. 
 
 	git add [archivo]
 
-('git add -A' agrega al seguimiento todos los archivos que están en la carpeta.)
+Esto le dice a git sobre qué archivos querés que tenga en cuenta para comparar y sincronizar con los que están en el repositorio.'git add -A' o 'git add .' agregan al seguimiento todos los archivos que están en la carpeta, y es mucho más práctico que agregar archivos uno por uno.
 
-* [Opcional] Corroborar que que haya cambios en los archivos agregados, sin 'guardar' en el seguimiento:
+* [Opcional] Corroborar qué cambios hay con respecto a la branch en la que se esté trabajando:
 
 	git status
 
 * 'Guardar' los cambios realizados sobre los archivos en el seguimiento:
 
 	git commit -m '[mensaje]'
+	
+Un commit es una serie de modificaciones hecha a archivos del repositorio, agrupadas según lo que sea que se esté tratando de arreglar o mejorar. Se pueden hacer varios commits en simultáneo, y conviene agruparlos con un mensaje que explique lo que se hizo. Por ejemplo, "cambio los histogramas a color rosa" indica bastante bien lo que se hizo en el cambio, por si en algún momento hay que backtrackear hasta ese punto.
 
 * [Opcional] Corroborar que hayan sido guardados los cambios en el repositorio local, y que falte subirlos al repositorio remoto:
 
@@ -48,3 +52,31 @@ Debería aparecer el mensaje 'Reinitialized existing Git repository in [path]'. 
 * Subir los cambios al repositorio remoto:
 
 	git push
+	
+No sólo sube los commits que están 'por delante' de lo que esté en el repositorio, sino que también lo compara y actualiza de manera inteligente, a veces puede traer conflictos si se superpone con los cambios hechos por otro. Lo importante es que cada commit pusheado, con su descripción, pasa a un commit history, y te permite ver el código en cada momento de su historia.
+
+*Ejemplo bobo: quiero agregar un archivo CSV con datos y modificar el archivo que los analiza para que haga alguna cosa más. Entonces,
+
+	git pull #actualizo
+	
+	spyder3 analisis.py #edito lo que quiera
+	git add .
+	git commit -m "Cambio el análisis para que haga X"
+	git push
+
+-----------------
+BONUS TRACK: zsh
+-----------------
+bash (la shell por defecto en linux), no diferencia muy bien las carpetas trackeadas por git de las que no. zsh hace eso de una manera muy linda, indicando la branch en la que estás. Además, tiene un autocompletado mágico que prácticamente usar la consola se vuelve apretar tab repetidamente.
+
+Instalación:
+sudo apt-get install zsh #ubuntu,debian
+which zsh # en dónde quedó instalado el binario de zsh, p.ej. /usr/bin/zsh
+chsh -s /usr/bin/zsh #changeshell, alternativamente cshs -s $(which zsh)
+
+Después de reinciar la terminal o la computadora, debería aparecer (cuando se abre una nueva terminal) un menu de configuración. Se selecciona la opción de no hacer cambios, y para la configuración se usa OhMyZsh(https://ohmyz.sh/), ingresando
+sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+
+Temas para zsh (hay algunos muy muy lindos): https://github.com/robbyrussell/oh-my-zsh/wiki/Themes 
+
+
