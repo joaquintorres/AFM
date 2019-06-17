@@ -116,4 +116,4 @@ plt.show()
 def desviacion_media(a,b): 
     if a.shape != b.shape:
         return np.nan
-    return (np.mean((np.square(a-b))))
+    return (np.sqrt(np.mean((np.square(a-b)))))
