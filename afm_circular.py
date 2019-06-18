@@ -2,11 +2,19 @@ from matplotlib import colors
 import numpy as np
 import matplotlib.pyplot as plt
 
-plt.rc('text', usetex=True)
-plt.rc('text.latex', preamble=r'\usepackage[scaled=0.85]{librebaskerville}, \usepackage[lite]{mtpro2}')
-plt.rc('font', family='serif')
-plt.rc('axes', titlesize=20, titlepad=12)
-plt.rc(['xtick', 'ytick'], labelsize=18)
+#plt.rc('text', usetex=True)
+#plt.rc('text.latex', preamble=r'\usepackage[scaled=0.85]{librebaskerville}, \usepackage[lite]{mtpro2}')
+#plt.rc('font', family='serif')
+#plt.rc('axes', titlesize=20, titlepad=12)
+#plt.rc(['xtick', 'ytick'], labelsize=18)
+
+#####################################################################################################
+# MSE Mean Squared Error
+#matrices a, b de = dimension
+def desviacion_media(a,b): 
+    if a.shape != b.shape:
+        return np.nan
+    return (np.sqrt(np.mean((np.square(a-b)))))
 
 #####################################################################################################
 # ARMO LA GRILLA
@@ -53,7 +61,7 @@ T[0] = G
 
 D = [np.zeros((px, px)),] * N
 D[0] = SP * np.ones((px, px))
-
+MSE = [desviacion_media(T[0],T[0])]
 for n in range(1, N):
     Kp = K[n][1]
     Ki = K[n][2]
@@ -79,7 +87,10 @@ for n in range(1, N):
     
     T[n] = z
     D[n] = f + SP * np.ones((px, px))
-
+    # Le calculamos la mse a cada una
+    mse = desviacion_media(T[0],T[n])
+    MSE.append(mse)
+    
 #####################################################################################################
 # PLOTEO LA GRILLA Y LAS TOPOGRAFÍAS
 
@@ -88,9 +99,9 @@ fig, axs = plt.subplots(rows, cols)
 plt.subplots_adjust(top=0.94, bottom=0.04, left=0.01, right=1.07, hspace=0.30, wspace=0.30)
 
 for i, ax in enumerate(axs.flat):
-    ax.set_title('(%s) $K_P = %.1f$, $K_I = %.1f$, $K_D = %.1f$' % K[i])
+    ax.set_title('(%s) $K_P = %.1f$, $K_I = %.1f$, $K_D = %.1f$' % K[i] + 'MSE = %.4f' % MSE[i])
 
-axs[0,0].set_title(r"(a) Grilla de calibraci\'{o}n") # Para la topografía T
+axs[0,0].set_title(r"(a) Grilla de calibración") # Para la topografía T
 #axs[0,0].set_title(r"(a) Controlador ``perfecto''") # Para la deflexión D
 
 images = [0,] * N
@@ -112,8 +123,4 @@ cbar.set_label(r'altura $z$ (nm)', y=0.5, fontsize=20) # Usar la lista T en el i
 
 plt.show()
 
-#matrices a, b de = dimension
-def desviacion_media(a,b): 
-    if a.shape != b.shape:
-        return np.nan
-    return (np.sqrt(np.mean((np.square(a-b)))))
+
