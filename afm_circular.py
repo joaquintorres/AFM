@@ -34,6 +34,7 @@ p = 2 # La grilla va a ser de "p x p" pitch's
 R = np.concatenate((A,) * p) # Primera concatenación: un "pitch" debajo del otro
 G = np.concatenate((R,) * p, axis=1) # Al "rectangulo" R lo concateno uno al lado del otro: obtengo la grilla circular G
 
+#%%
 #####################################################################################################
 # SIMULO EL LAZO DE CONTROL PID
 
@@ -43,19 +44,85 @@ k  = 0.6 # Constante del resorte (cantilever "lineal")
 SP = 50  # Setpoint en nN
 
 # Constantes Kp, Ki y Kd (en ese orden) del controlador PID. Las letras las usamos luego al plotear las figuras
+# Las que uso el grupo anterior
+
+#K = [
+#    ('a', 0, 0, 0),
+#    ('b', 0.10, 0.00, 0),
+#    ('c', 0.10, 0.20, 0),
+#    ('d', 0.10, 0.70, 0),
+#    ('e', 0.10, 1.5, 0),
+#    ('f', 0.10, 1.50, 10),
+#]
+
 K = [
     ('a', 0, 0, 0),
     ('b', 0.10, 0.00, 0),
-    ('c', 0.20, 0.10, 0),
+    ('c', 1.20, 1.10, 0),
     ('d', 1.90, 1.70, 0),
     ('e', 1.70, 0.80, 0),
     ('f', 1.70, 0.80, 0.30),
 ]
 
+
+#K = [
+#    ('a', 0, 0, 0),
+#    ('b', 1.70, 0.8, 0),
+#    ('c', 1.70, 0.9, 0),
+#    ('d', 1.70, 0.95, 0),
+#    ('e', 1.60, 0.80, 0),
+#    ('f', 1.60, 0.9, 0),
+#]
+
+#K = [
+#    ('a', 0, 0, 0),
+#    ('b', 1.50, 0.8, 0),
+#    ('c', 1.40, 0.8, 0),
+#    ('d', 1.30, 0.8, 0),
+#    ('e', 1.60, 0.7, 0),
+#    ('f', 1.60, 0.6, 0),
+#]
+
+#K = [
+#    ('a', 0, 0, 0),
+#    ('b', 1.60, 0.6, 0),
+#    ('c', 1.60, 0.5, 0),
+#    ('d', 1.60, 0.4, 0),
+#    ('e', 1.60, 0.3, 0),
+#    ('f', 1.60, 0.2, 0),
+#]
+#
+#K = [
+#    ('a', 0, 0, 0),
+#    ('b', 1.50, 0.4, 0),
+#    ('c', 1.40, 0.4, 0),
+#    ('d', 1.30, 0.4, 0),
+#    ('e', 1.60, 0.4, 0),
+#    ('f', 1.70, 0.4, 0),
+#]
+
+#K = [
+#    ('a', 0, 0, 0),
+#    ('b', 1.30, 0.4, 0),
+#    ('c', 1.20, 0.4, 0),
+#    ('d', 1.10, 0.4, 0),
+#    ('e', 1.30, 0.3, 0),
+#    ('f', 1.3, 0.2, 0),
+#]
+
+#K = [
+#    ('a', 0, 0, 0),
+#    ('b', 1.0, 0.1, 0),
+#    ('c', 0.9, 0.1, 0),
+#    ('d', 0.8, 0.1, 0),
+#    ('e', 0.9, 0.0, 0),
+#    ('f', 0.9, 0.05, 0),
+#]
+
 rows = 2
 cols = 3
 N = rows * cols
-
+n_rep = 10 #tiempo en cada cosito 
 T = [np.zeros((px, px)),] * N
 T[0] = G
 
@@ -78,13 +145,18 @@ for n in range(1, N):
         for j in range(0, px): # Para la fila i, barro en j (de izquierda a derecha)
             f[i,j] = k * (G[i,j] - G[0,0]) + U[i] # Mido la fuerza en la posición (i,j). Al setpoint le sumo cuánto comprime
                                                   # la muestra al resorte-cantilever y las correcciones que va haciendo el lazo
-
-            u[i,j] = Kp * (-1*f[i,j]) + Ki * (np.sum(-1*f[i,:j])) + Kd * (-1*f[i,j] - (-1)*f[i,j-1]) # Para esa desviación, el lazo PID corrije
+            corr = np.zeros(n_rep)
+            fuerza = np.zeros(n_rep)
+            fuerza[0] = f[i,j]
+            for l in range(1,n_rep):                  
+                corr[l] = Kp * (-1*fuerza[l]) + Ki * (np.sum(-1*fuerza[:l])) + Kd * (-1*fuerza[l] - (-1)*fuerza[l-1])
+                fuerza[l] = fuerza[l-1] + corr[l]
+            f[i,j] = fuerza[-1]    
+            u[i,j] = sum(corr)
             U[i] = U[i] + u[i,j] # Voy sumando las correcciones del lazo para sumarlas a la mediciones de fuerza f: no sólo
                                  # la topografía contribuye a la fuerza medida
             Z[i] = Z[i] - u[i,j] # Para cada linea sumo las correciones (con signo corregido) hechas hasta los primeros j píxeles barridos
-            z[i,j] = Z[i]/k # Hasta ahora todas las mediciones eran de fuerza, como lo modelo con un resorte paso la fuerza a distancia
-    
+            z[i,j] = Z[i]/k # Hasta ahora todas las mediciones eran de fuerza, como lo modelo con un resorte paso la fuerza a distancia       
     T[n] = z
     D[n] = f + SP * np.ones((px, px))
     # Le calculamos la mse a cada una
