@@ -118,7 +118,7 @@ K = [
 #    ('e', 0.9, 0.0, 0),
 #    ('f', 0.9, 0.05, 0),
 #]
-
+antiwindup = 200 #siguiendo las magnitudes de la sim serian  nN
 rows = 2
 cols = 3
 N = rows * cols
@@ -149,14 +149,26 @@ for n in range(1, N):
             fuerza = np.zeros(n_rep)
             fuerza[0] = f[i,j]
             for l in range(1,n_rep):                  
+#                if np.sum(-1*fuerza[:l]) <= antiwindup:
+#                    corr[l] = Kp * (-1*fuerza[l]) + Ki * (np.sum(-1*fuerza[:l])) + Kd * (-1*fuerza[l] - (-1)*fuerza[l-1])
+#                    fuerza[l] = fuerza[l-1] + corr[l]
+#                else:
+#                    corr[l] = Kp * (-1*fuerza[l]) + Ki *(-1*antiwindup) + Kd * (-1*fuerza[l] - (-1)*fuerza[l-1])
+#                    fuerza[l] = fuerza[l-1] + corr[l]
                 corr[l] = Kp * (-1*fuerza[l]) + Ki * (np.sum(-1*fuerza[:l])) + Kd * (-1*fuerza[l] - (-1)*fuerza[l-1])
-                fuerza[l] = fuerza[l-1] + corr[l]
+                if corr[l] <= antiwindup:    
+                    fuerza[l] = fuerza[l-1] + corr[l]
+                else:
+                    corr[l] = antiwindup
+                    fuerza[l] = fuerza[l-1] + corr[l]
+                    
             f[i,j] = fuerza[-1]    
             u[i,j] = sum(corr)
             U[i] = U[i] + u[i,j] # Voy sumando las correcciones del lazo para sumarlas a la mediciones de fuerza f: no sólo
                                  # la topografía contribuye a la fuerza medida
             Z[i] = Z[i] - u[i,j] # Para cada linea sumo las correciones (con signo corregido) hechas hasta los primeros j píxeles barridos
             z[i,j] = Z[i]/k # Hasta ahora todas las mediciones eran de fuerza, como lo modelo con un resorte paso la fuerza a distancia       
+            
     T[n] = z
     D[n] = f + SP * np.ones((px, px))
     # Le calculamos la mse a cada una
